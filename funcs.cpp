@@ -25,12 +25,10 @@ std::string Decrypt(std::ifstream& fin, const char* table){
     return Otext;
 }
 
-double LogRank(const std::string& Otext, std::ifstream& fin){
-    fin.clear();
-    fin.seekg(0, std::ios::beg);
-    
+double LogRank(const std::string& Otext, float table[33][33][33][33]){  
     std::string word="";
     std::string buff;
+    int num;
 
     double S=0;
 
@@ -38,15 +36,9 @@ double LogRank(const std::string& Otext, std::ifstream& fin){
         for(int j=0;j<4;++j){
             word+=Otext[i+j];
         }
-        fin.clear();
-        fin.seekg(0, std::ios::beg);
-        while(std::getline(fin,buff)){
-            if(word==buff.substr(0,4)){
-                int num=std::stoi(buff.substr(5));
-                S+=log2(num);
-                break;
-            }
-        }
+        try{
+            num=table[ static_cast<unsigned char> (word[0]) ][ static_cast<unsigned char> (word[1]) ][ static_cast<unsigned char> (word[2]) ][ static_cast<unsigned char> (word[3]) ];
+        }catch(...){continue;}
         word="";
     }
     return S;
@@ -92,7 +84,7 @@ std::string BestNeighbour(const std::string& key, const std::string& alphabet, s
             std::swap(neighbour[i], neighbour[i+j]);
             MakeTable(neighbour, alphabet, table);
             Otext=Decrypt(finC, table);
-            S=LogRank(Otext, finQ);
+            //S=LogRank(Otext, finQ);
             if(S>Best_Rank){
                 Best_Rank=S;
                 best_neighbour=neighbour;
@@ -100,4 +92,15 @@ std::string BestNeighbour(const std::string& key, const std::string& alphabet, s
         }
     }
     return best_neighbour;
+}
+
+void MakeRankedTable(std::ifstream& fin, float table[33][33][33][33]){
+    fin.clear();
+    fin.seekg(0, std::ios::beg);
+    std::string buff;
+
+    while(std::getline(fin,buff)){
+           table[ static_cast<unsigned char> (buff[0]) ][ static_cast<unsigned char> (buff[1]) ][ static_cast<unsigned char> (buff[2]) ][ static_cast<unsigned char> (buff[3]) ]=std::stoi(buff.substr(5));
+    }
+       
 }
